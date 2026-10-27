@@ -1,3 +1,30 @@
 spring:
   application:
     name: giant
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jackson:
+    time-zone: UTC
+    mapper:
+      accept-case-insensitive-enums: true
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+mybatis:
+  mapper-locations:
+    - classpath:db/mappers/*.xml
+  type-aliases-package: com.giant.module.auth.dto
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html # 👉 OpenAPI JSON 문서 경로 (기본: /api-docs)
+  api-docs:
+    path: /api-docs  # 👉 Swagger UI 접속 경로 (기본: /swagger-ui/index.html)
