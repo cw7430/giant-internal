@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0"
 
 java {
 	toolchain {
@@ -21,10 +21,24 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1")
+	implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:2.0.1")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("tools.jackson.module:jackson-module-kotlin")
+	implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
+
+	implementation("org.flywaydb:flyway-database-postgresql")
+	implementation("com.github.vertical-blank:sql-formatter:2.0.5")
 	runtimeOnly("org.postgresql:postgresql")
+
+	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
