@@ -5,6 +5,8 @@ import com.giant.common.api.type.ResponseCode
 import com.giant.module.auth.dto.vo.AccountVo
 import com.giant.module.auth.type.AuthRole
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.Record
 import org.jooq.generated.auth.tables.references.ACCOUNT
 import org.jooq.generated.auth.tables.references.REFRESH_TOKEN
 import org.jooq.generated.employee.tables.references.DEPARTMENT
@@ -18,14 +20,25 @@ import java.time.Instant
 class AuthJooqRepository(
     private val ctx: DSLContext
 ) {
-    fun findAccountByUserName(userName: String): AccountVo.Login? {
-        val ac = ACCOUNT.`as`("ac")
-        val pf = PROFILE.`as`("pf")
-        val tm = TEAM.`as`("tm")
-        val dp = DEPARTMENT.`as`("dp")
-        val ps = POSITION.`as`("ps")
+    private fun <T : Any> Record.required(
+        field: Field<T?>,
+        code: ResponseCode = ResponseCode.INTERNAL_SERVER_ERROR
+    ): T = this.get(field) ?: throw CustomException(code)
 
-        return ctx.select(
+    private val ac = ACCOUNT.`as`("ac")
+    private val pf = PROFILE.`as`("pf")
+    private val tm = TEAM.`as`("tm")
+    private val dp = DEPARTMENT.`as`("dp")
+    private val ps = POSITION.`as`("ps")
+
+    private fun joinForLoginData() =
+        ac.join(pf).on(ac.ID.eq(pf.ID))
+            .join(tm).on(pf.TEAM_ID.eq(tm.ID))
+            .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
+            .join(ps).on(pf.POSITION_ID.eq(ps.ID))
+
+    fun findAccountByUserName(userName: String): AccountVo.Login? =
+        ctx.select(
             ac.ID,
             ac.PASSWORD_HASH,
             ac.AUTH_ROLE,
@@ -35,33 +48,63 @@ class AuthJooqRepository(
             dp.DEPARTMENT_CODE,
             tm.TEAM_CODE,
             ps.POSITION_CODE
-        )
-            .from(ac)
-            .join(pf).on(ac.ID.eq(pf.ID))
-            .join(tm).on(pf.TEAM_ID.eq(tm.ID))
-            .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
-            .join(ps).on(pf.POSITION_ID.eq(ps.ID))
-            .where(ac.USER_NAME.eq(userName))
-            .and(ac.AUTH_ROLE.ne(AuthRole.LEFT))
+        ).from(joinForLoginData())
+            .where(
+                ac.USER_NAME.eq(userName),
+                ac.AUTH_ROLE.ne(AuthRole.LEFT)
+            )
             .fetchOne { rc ->
                 AccountVo.Login(
-                    accountId = rc[ac.ID] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    passwordHash = rc[ac.PASSWORD_HASH] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    authRole = rc[ac.AUTH_ROLE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    employeeCode = rc[pf.EMPLOYEE_CODE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    employeeName = rc[pf.EMPLOYEE_NAME] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    employeeRole = rc[pf.EMPLOYEE_ROLE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    departmentCode = rc[dp.DEPARTMENT_CODE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    teamCode = rc[tm.TEAM_CODE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
-                    positionCode = rc[ps.POSITION_CODE] ?: throw CustomException(ResponseCode.LOGIN_ERROR),
+                    accountId = rc.required(ac.ID, ResponseCode.LOGIN_ERROR),
+                    passwordHash = rc.required(ac.PASSWORD_HASH, ResponseCode.LOGIN_ERROR),
+                    authRole = rc.required(ac.AUTH_ROLE, ResponseCode.LOGIN_ERROR),
+                    employeeCode = rc.required(pf.EMPLOYEE_CODE, ResponseCode.LOGIN_ERROR),
+                    employeeName = rc.required(pf.EMPLOYEE_NAME, ResponseCode.LOGIN_ERROR),
+                    employeeRole = rc.required(pf.EMPLOYEE_ROLE, ResponseCode.LOGIN_ERROR),
+                    departmentCode = rc.required(dp.DEPARTMENT_CODE, ResponseCode.LOGIN_ERROR),
+                    teamCode = rc.required(tm.TEAM_CODE, ResponseCode.LOGIN_ERROR),
+                    positionCode = rc.required(ps.POSITION_CODE, ResponseCode.LOGIN_ERROR)
                 )
             }
-    }
+
+    fun findAccountById(accountId: Long): AccountVo.Refresh? =
+        ctx.select(
+            ac.ID,
+            ac.AUTH_ROLE,
+            pf.EMPLOYEE_CODE,
+            pf.EMPLOYEE_NAME,
+            pf.EMPLOYEE_ROLE,
+            dp.DEPARTMENT_CODE,
+            tm.TEAM_CODE,
+            ps.POSITION_CODE
+        )
+            .from(joinForLoginData())
+            .where(
+                ac.ID.eq(accountId),
+                ac.AUTH_ROLE.ne(AuthRole.LEFT)
+            )
+            .fetchOne { rc ->
+                AccountVo.Refresh(
+                    accountId = rc.required(ac.ID, ResponseCode.UNAUTHORIZED),
+                    authRole = rc.required(ac.AUTH_ROLE, ResponseCode.UNAUTHORIZED),
+                    employeeCode = rc.required(pf.EMPLOYEE_CODE, ResponseCode.UNAUTHORIZED),
+                    employeeName = rc.required(pf.EMPLOYEE_NAME, ResponseCode.UNAUTHORIZED),
+                    employeeRole = rc.required(pf.EMPLOYEE_ROLE, ResponseCode.UNAUTHORIZED),
+                    departmentCode = rc.required(dp.DEPARTMENT_CODE, ResponseCode.UNAUTHORIZED),
+                    teamCode = rc.required(tm.TEAM_CODE, ResponseCode.UNAUTHORIZED),
+                    positionCode = rc.required(ps.POSITION_CODE, ResponseCode.UNAUTHORIZED)
+                )
+            }
 
     fun createRefreshToken(accountId: Long, refreshToken: String, expiresAt: Instant) =
         ctx.insertInto(REFRESH_TOKEN)
             .set(REFRESH_TOKEN.ACCOUNT_ID, accountId)
             .set(REFRESH_TOKEN.TOKEN, refreshToken)
             .set(REFRESH_TOKEN.EXPIRES_AT, expiresAt)
+            .execute()
+
+    fun deleteRefreshTokenByRefreshToken(refreshToken: String) =
+        ctx.deleteFrom(REFRESH_TOKEN)
+            .where(REFRESH_TOKEN.TOKEN.eq(refreshToken))
             .execute()
 }

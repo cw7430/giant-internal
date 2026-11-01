@@ -22,4 +22,10 @@ interface AuthRequestDto {
         )
         val isAuto: Boolean
     ): AuthRequestDto
+
+    @Schema(name = "LogoutRequest")
+    data class Logout(
+        @get:Schema(description = "Refresh token")
+        val refreshToken: String?
+    )
 }

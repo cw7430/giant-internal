@@ -68,4 +68,24 @@ class AuthController(
     )
     fun login(@RequestBody @Valid reqDto: AuthRequestDto.Login): ResponseEntity<AuthResponseDto.Login> =
         ResponseEntity.ok(authService.login(reqDto))
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
+    @ApiResponses(
+        ApiResponse(
+            responseCode = "204", description = "로그아웃 성공"
+        ),
+        ApiResponse(
+            responseCode = "500", description = "기타오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.InternalServerError::class)
+                )
+            ]
+        )
+    )
+    fun logout(@RequestBody reqDto: AuthRequestDto.Logout): ResponseEntity<Void> {
+        authService.logout(reqDto)
+        return ResponseEntity.noContent().build()
+    }
 }
