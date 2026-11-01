@@ -68,4 +68,10 @@ class AuthService(
 
         return issueTokensAndBuild(account, reqDto.isAuto)
     }
+
+    @Transactional
+    fun logout(reqDto: AuthRequestDto.Logout) {
+        val refreshToken = reqDto.refreshToken ?: return
+        authJooqRepository.deleteRefreshTokenByRefreshToken(refreshToken)
+    }
 }
