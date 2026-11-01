@@ -1,5 +1,3 @@
-import org.jooq.meta.kotlin.forcedType
-
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
@@ -145,12 +143,29 @@ jooq {
                         name = "org.jooq.meta.postgres.PostgresDatabase"
                         includes = ".*"
                         excludes = "(pg_catalog|information_schema|pg_toast)\\..* | flyway_schema_history"
-                        forcedTypes.apply {
-                            forcedType {
-                                userType = "java.time.Instant"
-                                includeTypes = "(?i)TIMESTAMP.*"
-                            }
-                        }
+                        forcedTypes.addAll(
+                            listOf(
+                                org.jooq.meta.jaxb.ForcedType().apply {
+                                    userType = "java.time.Instant"
+                                    includeTypes = "(?i)TIMESTAMP.*"
+                                },
+                                org.jooq.meta.jaxb.ForcedType().apply {
+                                    userType = "com.giant.module.auth.type.AuthRole"
+                                    isEnumConverter = true
+                                    includeTypes = "auth.auth_role"
+                                },
+                                org.jooq.meta.jaxb.ForcedType().apply {
+                                    userType = "com.giant.module.employee.type.EmployeeRole"
+                                    isEnumConverter = true
+                                    includeTypes = "employee.employee_role"
+                                },
+                                org.jooq.meta.jaxb.ForcedType().apply {
+                                    userType = "com.giant.module.employee.type.AttendanceStatus"
+                                    isEnumConverter = true
+                                    includeTypes = "employee.attendance_status"
+                                }
+                            )
+                        )
                     }
                 }
             }
