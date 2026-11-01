@@ -1,8 +1,11 @@
+import org.jooq.meta.kotlin.forcedType
+
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
     id("org.springframework.boot") version "4.0.9"
     id("io.spring.dependency-management") version "1.1.7"
+    id("nu.studer.jooq") version "10.2.1"
     id("org.flywaydb.flyway") version "13.11.1"
 }
 
@@ -30,10 +33,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-flyway")
-    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:2.0.1")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
@@ -41,7 +43,10 @@ dependencies {
 
     implementation("org.flywaydb:flyway-database-postgresql:13.11.1")
     implementation("com.github.vertical-blank:sql-formatter:2.0.5")
+    @Suppress("AvoidDuplicateDependencies")
     runtimeOnly("org.postgresql:postgresql:42.7.14")
+    @Suppress("AvoidDuplicateDependencies")
+    jooqGenerator("org.postgresql:postgresql:42.7.14")
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
@@ -49,8 +54,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -79,7 +84,7 @@ fun loadDatabaseConfig(): DatabaseConfig {
     }
 
     val locationCommon = "filesystem:src/main/resources/db/migration/common"
-    val locationDev = "filesystem:src/main/resources/db/migration/dev"
+    val locationDev = "filesystem:src/test/resources/db/migration/dev"
 
     val flywayLocations = when (activeProfile) {
         "prod", "stage" -> listOf(locationCommon)
@@ -118,6 +123,41 @@ fun loadDatabaseConfig(): DatabaseConfig {
 
 val (dbUrl, dbUser, dbPassword, flywayLocations) = loadDatabaseConfig()
 
+jooq {
+    version.set("3.19.39")
+
+    configurations {
+        create("main") {
+            generateSchemaSourceOnCompilation.set(false)
+
+            jooqConfiguration {
+                jdbc.apply {
+                    driver = "org.postgresql.Driver"
+                    url = dbUrl
+                    user = dbUser
+                    password = dbPassword
+                }
+
+                generator.apply {
+                    name = "org.jooq.codegen.KotlinGenerator"
+
+                    database.apply {
+                        name = "org.jooq.meta.postgres.PostgresDatabase"
+                        includes = ".*"
+                        excludes = "(pg_catalog|information_schema|pg_toast)\\..* | flyway_schema_history"
+                        forcedTypes.apply {
+                            forcedType {
+                                userType = "java.time.Instant"
+                                includeTypes = "(?i)TIMESTAMP.*"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 flyway {
     url = dbUrl
     user = dbUser
@@ -136,6 +176,10 @@ tasks.matching { it.name.startsWith("flyway") }.configureEach {
 
 tasks.jar {
     enabled = false
+}
+
+tasks.named("generateJooq") {
+    dependsOn(tasks.named("flywayMigrate"))
 }
 
 tasks.withType<Test> {

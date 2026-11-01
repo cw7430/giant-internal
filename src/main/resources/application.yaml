@@ -6,6 +6,8 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
+  jooq:
+    sql-dialect: postgres
   jackson:
     time-zone: UTC
     mapper:
@@ -15,13 +17,6 @@ spring:
 
 server:
   port: 8080
-
-mybatis:
-  mapper-locations:
-    - classpath:db/mappers/*.xml
-  type-aliases-package: com.giant.module.auth.dto
-  configuration:
-    map-underscore-to-camel-case: true
 
 springdoc:
   swagger-ui:
