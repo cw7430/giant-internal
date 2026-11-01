@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 import com.giant.common.api.exception.CustomException
 import com.giant.common.api.type.ResponseCode
-import java.util.Locale
+import java.util.*
 
 enum class AuthRole {
     USER, ADMIN, LEFT;
