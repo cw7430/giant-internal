@@ -1,9 +1,7 @@
 CREATE DATABASE giant;
 
-CREATE DATABASE giant_test;
-
 CREATE USER test_user WITH PASSWORD 'test1234';
 
-\c giant_test
+\c giant
 
-GRANT ALL PRIVILEGES ON DATABASE giant_test TO test_user;
+GRANT ALL PRIVILEGES ON DATABASE giant TO test_user;
