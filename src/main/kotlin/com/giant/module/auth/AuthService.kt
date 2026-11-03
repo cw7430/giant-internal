@@ -9,6 +9,7 @@ import com.giant.module.auth.dto.response.AuthResponseDto
 import com.giant.module.auth.dto.vo.AccountVo
 import com.giant.module.auth.repository.AuthJooqRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -65,6 +66,25 @@ class AuthService(
         }
 
         log.info { "Login In successfully for account ID:${account.accountId}" }
+
+        return issueTokensAndBuild(account, reqDto.isAuto)
+    }
+
+    @Transactional
+    fun refresh(req: HttpServletRequest, reqDto: AuthRequestDto.Refresh): AuthResponseDto.Login {
+        val formalRefreshToken = jwtUtil.extractToken(req)
+        val accountId = jwtUtil.extractUserIdFromRefreshToken(formalRefreshToken)
+
+        if (!authJooqRepository.existRefreshTokenByAccountIdAndToken(accountId, formalRefreshToken)) {
+            throw CustomException(ResponseCode.UNAUTHORIZED)
+        }
+
+        authJooqRepository.deleteRefreshTokenByRefreshToken(formalRefreshToken)
+
+        val account = authJooqRepository.findAccountById(accountId)
+            ?: throw CustomException(ResponseCode.UNAUTHORIZED)
+
+        log.info { "Refresh In successfully for account ID:${account.accountId}" }
 
         return issueTokensAndBuild(account, reqDto.isAuto)
     }
