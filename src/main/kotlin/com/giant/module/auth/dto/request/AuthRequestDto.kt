@@ -27,5 +27,15 @@ interface AuthRequestDto {
     data class Logout(
         @get:Schema(description = "Refresh token")
         val refreshToken: String?
-    )
+    ): AuthRequestDto
+
+    @Schema(name = "RefreshRequest")
+    data class Refresh(
+        @get:Schema(
+            name = "isAuto",
+            description = "장기 로그인",
+            example = "false"
+        )
+        val isAuto: Boolean
+    ): AuthRequestDto
 }

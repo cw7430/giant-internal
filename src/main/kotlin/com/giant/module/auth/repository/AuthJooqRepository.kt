@@ -13,6 +13,7 @@ import org.jooq.generated.employee.tables.references.DEPARTMENT
 import org.jooq.generated.employee.tables.references.POSITION
 import org.jooq.generated.employee.tables.references.PROFILE
 import org.jooq.generated.employee.tables.references.TEAM
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
@@ -95,6 +96,15 @@ class AuthJooqRepository(
                     positionCode = rc.required(ps.POSITION_CODE, ResponseCode.UNAUTHORIZED)
                 )
             }
+
+    fun existRefreshTokenByAccountIdAndToken(accountId: Long, refreshToken: String): Boolean =
+        ctx.fetchExists(
+            DSL.selectOne().from(REFRESH_TOKEN)
+                .where(
+                    REFRESH_TOKEN.ACCOUNT_ID.eq(accountId),
+                    REFRESH_TOKEN.TOKEN.eq(refreshToken)
+                )
+        )
 
     fun createRefreshToken(accountId: Long, refreshToken: String, expiresAt: Instant) =
         ctx.insertInto(REFRESH_TOKEN)
