@@ -1,5 +1,6 @@
 package com.giant.module.auth.dto.request
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 
@@ -15,6 +16,8 @@ interface AuthRequestDto {
         @get:Schema(description = "비빌번호", example = "examplepw1234!@")
         val password: String,
 
+        @param:JsonProperty("isAuto")
+        @get:JsonProperty("isAuto")
         @get:Schema(
             name = "isAuto",
             description = "장기 로그인",
@@ -31,6 +34,8 @@ interface AuthRequestDto {
 
     @Schema(name = "RefreshRequest")
     data class Refresh(
+        @param:JsonProperty("isAuto")
+        @get:JsonProperty("isAuto")
         @get:Schema(
             name = "isAuto",
             description = "장기 로그인",
