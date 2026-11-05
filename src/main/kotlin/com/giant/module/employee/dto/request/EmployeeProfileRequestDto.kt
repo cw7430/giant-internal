@@ -22,5 +22,5 @@ interface EmployeeProfileRequestDto {
 
         @get:Schema(description = "정렬 방식", example = "asc")
         val sortOrder: SortOrder = SortOrder.ASC
-    ): PageRequest(page, size, blockSize)
+    ): PageRequest(page, size, blockSize), EmployeeProfileRequestDto
 }
