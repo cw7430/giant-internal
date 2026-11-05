@@ -69,7 +69,7 @@ interface EmployeeProfileResponseDto {
         open val updatedAt: Instant,
 
         @get:Schema(description = "퇴사일", example = "null", nullable = true)
-        open val deletedAt: Instant
+        open val deletedAt: Instant?
     )
 
     @Schema(name = "TeamResponse")
@@ -141,7 +141,7 @@ interface EmployeeProfileResponseDto {
         override val updatedEmployeeName: String,
         override val createdAt: Instant,
         override val updatedAt: Instant,
-        override val deletedAt: Instant
+        override val deletedAt: Instant?
     ) : Profile(
         employeeId,
         employeeCode,
