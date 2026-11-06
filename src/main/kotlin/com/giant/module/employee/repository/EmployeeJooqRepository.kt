@@ -143,7 +143,7 @@ class EmployeeJooqRepository(
                     tm.TEAM_CODE,
                     tm.TEAM_NAME
                 ).from(tm)
-                    .join(dp).on(tm.ID.eq(dp.ID))
+                    .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
                     .orderBy(tm.ID.asc())
             ).convertFrom { rs ->
                 rs.mapNotNull { rc ->
