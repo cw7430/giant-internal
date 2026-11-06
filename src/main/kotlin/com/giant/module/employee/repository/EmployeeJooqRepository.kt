@@ -16,7 +16,11 @@ import org.jooq.generated.employee.tables.references.DEPARTMENT
 import org.jooq.generated.employee.tables.references.POSITION
 import org.jooq.generated.employee.tables.references.PROFILE
 import org.jooq.generated.employee.tables.references.TEAM
+import org.jooq.impl.DSL
+import org.jooq.impl.DSL.multiset
+import org.springframework.stereotype.Repository
 
+@Repository
 class EmployeeJooqRepository(
     private val ctx: DSLContext
 ) {
@@ -85,7 +89,7 @@ class EmployeeJooqRepository(
             pfMain.CREATED_BY,
             createdEmployeeName,
             pfMain.UPDATED_BY,
-            pfUd.EMPLOYEE_NAME.`as`("updated_employee_name"),
+            updatedEmployeeName,
             pfMain.CREATED_AT,
             pfMain.UPDATED_AT,
             pfMain.DELETED_AT
@@ -124,4 +128,66 @@ class EmployeeJooqRepository(
                 )
             }
     }
+
+    fun findDepartmentList(): List<EmployeeProfileResponseDto.Department> {
+        val dp = DEPARTMENT.`as`("dp")
+        val tm = TEAM.`as`("tm")
+
+        return ctx.select(
+            dp.ID,
+            dp.DEPARTMENT_CODE,
+            dp.DEPARTMENT_NAME,
+            multiset(
+                DSL.select(
+                    tm.ID,
+                    tm.TEAM_CODE,
+                    tm.TEAM_NAME
+                ).from(tm)
+                    .join(dp).on(tm.ID.eq(dp.ID))
+                    .orderBy(tm.ID.asc())
+            ).convertFrom { rs ->
+                rs.mapNotNull { rc ->
+                    EmployeeProfileResponseDto.Team(
+                        teamId = rc.required(tm.ID, ResponseCode.INTERNAL_SERVER_ERROR),
+                        teamCode = rc.required(tm.TEAM_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
+                        teamName = rc.required(tm.TEAM_NAME, ResponseCode.INTERNAL_SERVER_ERROR)
+                    )
+                }
+            }
+        ).from(dp).orderBy(dp.DEPARTMENT_CODE.asc()).fetch { rc ->
+            EmployeeProfileResponseDto.Department(
+                departmentId = rc.required(dp.ID, ResponseCode.INTERNAL_SERVER_ERROR),
+                departmentCode = rc.required(dp.DEPARTMENT_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
+                departmentName = rc.required(dp.DEPARTMENT_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
+                teams = rc.value4()
+            )
+        }
+    }
+
+    fun findPositionList(): List<EmployeeProfileResponseDto.Position> {
+        val ps = POSITION.`as`("ps")
+
+        return ctx.select(
+            ps.ID,
+            ps.POSITION_CODE,
+            ps.POSITION_NAME,
+            ps.BASIC_SALARY,
+            ps.INCENTIVE_SALARY
+        ).from(ps).orderBy(ps.POSITION_CODE.desc()).fetch { rc ->
+            EmployeeProfileResponseDto.Position(
+                positionId = rc.required(ps.ID, ResponseCode.INTERNAL_SERVER_ERROR),
+                positionCode = rc.required(ps.POSITION_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
+                positionName = rc.required(ps.POSITION_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
+                basicSalary = rc.required(ps.BASIC_SALARY, ResponseCode.INTERNAL_SERVER_ERROR),
+                incentiveSalary = rc.required(ps.INCENTIVE_SALARY, ResponseCode.INTERNAL_SERVER_ERROR)
+            )
+        }
+    }
+
+    fun countEmployeeProfileList() =
+        ctx.fetchCount(
+            DSL.selectFrom(PROFILE).where(
+                PROFILE.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT)
+            )
+        )
 }
