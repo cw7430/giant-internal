@@ -17,10 +17,10 @@ interface EmployeeProfileRequestDto {
         @get:Schema(description = "페이지 블록 사이즈", example = "5")
         override val blockSize: Int = 5,
 
-        @get:Schema(description = "정렬 키", example = "employee")
+        @get:Schema(description = "정렬 키", example = "EMPLOYEE")
         val sortPath: EmployeeProfileSortPath = EmployeeProfileSortPath.EMPLOYEE,
 
-        @get:Schema(description = "정렬 방식", example = "asc")
+        @get:Schema(description = "정렬 방식", example = "ASC")
         val sortOrder: SortOrder = SortOrder.ASC
     ): PageRequest(page, size, blockSize), EmployeeProfileRequestDto
 }

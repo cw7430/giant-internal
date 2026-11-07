@@ -58,10 +58,15 @@ class EmployeeController(
             ]
         ),
         ApiResponse(
-            responseCode = "403", description = "Api Key 오류", content = [
+            responseCode = "403", description = "권한 오류", content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponseDoc.KeyError::class)
+                    schema = Schema(
+                        oneOf = [
+                            ErrorResponseDoc.Forbidden::class,
+                            ErrorResponseDoc.KeyError::class
+                        ]
+                    )
                 )
             ]
         ),
