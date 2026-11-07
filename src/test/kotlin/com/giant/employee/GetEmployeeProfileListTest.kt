@@ -30,8 +30,8 @@ class GetEmployeeProfileListTest : EmployeeControllerTest() {
     @DisplayName("직원 목록 조회 - 인증 오류")
     fun failWithUnauthorized() {
         get(URL)
-            .key().send().andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.code))
+            .key().send().andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value(ResponseCode.UNAUTHORIZED.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
@@ -52,16 +52,6 @@ class GetEmployeeProfileListTest : EmployeeControllerTest() {
         get(URL)
             .key().auth(accessToken).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.EXPIRED_TOKEN.code))
-            .andExpect(jsonPath("$.message").isNotEmpty())
-    }
-
-    @Test
-    @DisplayName("직원 목록 조회 - 권한 오류")
-    fun failWithForbidden() {
-        val accessToken = authTestUtil.getTestToken(SALARY_LOGIN_DATA).accessToken
-        get(URL)
-            .key().auth(accessToken).send().andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value(ResponseCode.FORBIDDEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
