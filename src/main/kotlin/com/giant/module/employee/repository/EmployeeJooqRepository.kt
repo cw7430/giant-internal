@@ -151,17 +151,17 @@ class EmployeeJooqRepository(
             ).convertFrom { rs ->
                 rs.mapNotNull { rc ->
                     EmployeeProfileResponseDto.Team(
-                        teamId = rc.required(tm.ID, ResponseCode.INTERNAL_SERVER_ERROR),
-                        teamCode = rc.required(tm.TEAM_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                        teamName = rc.required(tm.TEAM_NAME, ResponseCode.INTERNAL_SERVER_ERROR)
+                        teamId = rc.required(tm.ID),
+                        teamCode = rc.required(tm.TEAM_CODE),
+                        teamName = rc.required(tm.TEAM_NAME)
                     )
                 }
             }
         ).from(dp).orderBy(dp.DEPARTMENT_CODE.asc()).fetch { rc ->
             EmployeeProfileResponseDto.Department(
-                departmentId = rc.required(dp.ID, ResponseCode.INTERNAL_SERVER_ERROR),
-                departmentCode = rc.required(dp.DEPARTMENT_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                departmentName = rc.required(dp.DEPARTMENT_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
+                departmentId = rc.required(dp.ID),
+                departmentCode = rc.required(dp.DEPARTMENT_CODE),
+                departmentName = rc.required(dp.DEPARTMENT_NAME),
                 teams = rc.value4()
             )
         }
@@ -178,11 +178,11 @@ class EmployeeJooqRepository(
             ps.INCENTIVE_SALARY
         ).from(ps).orderBy(ps.POSITION_CODE.desc()).fetch { rc ->
             EmployeeProfileResponseDto.Position(
-                positionId = rc.required(ps.ID, ResponseCode.INTERNAL_SERVER_ERROR),
-                positionCode = rc.required(ps.POSITION_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                positionName = rc.required(ps.POSITION_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
-                basicSalary = rc.required(ps.BASIC_SALARY, ResponseCode.INTERNAL_SERVER_ERROR),
-                incentiveSalary = rc.required(ps.INCENTIVE_SALARY, ResponseCode.INTERNAL_SERVER_ERROR)
+                positionId = rc.required(ps.ID),
+                positionCode = rc.required(ps.POSITION_CODE),
+                positionName = rc.required(ps.POSITION_NAME),
+                basicSalary = rc.required(ps.BASIC_SALARY),
+                incentiveSalary = rc.required(ps.INCENTIVE_SALARY)
             )
         }
     }
