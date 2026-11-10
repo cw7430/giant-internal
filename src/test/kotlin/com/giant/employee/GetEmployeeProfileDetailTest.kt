@@ -17,16 +17,6 @@ class GetEmployeeProfileDetailTest : EmployeeControllerTest() {
     }
 
     @Test
-    @DisplayName("직원 상세 조회 - 없는 리소스")
-    fun failWithResourceNotFound() {
-        val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        get(INVALID_URL)
-            .key().auth(accessToken).send().andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.code").value(ResponseCode.RESOURCE_NOT_FOUND.code))
-            .andExpect(jsonPath("$.message").isNotEmpty())
-    }
-
-    @Test
     @DisplayName("직원 상세 조회 - 인증 오류")
     fun failWithUnauthorized() {
         get(URL)
@@ -65,9 +55,18 @@ class GetEmployeeProfileDetailTest : EmployeeControllerTest() {
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
+    @Test
+    @DisplayName("직원 상세 조회 - 없는 리소스")
+    fun failWithResourceNotFound() {
+        val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
+        get(INVALID_URL)
+            .key().auth(accessToken).send().andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value(ResponseCode.RESOURCE_NOT_FOUND.code))
+            .andExpect(jsonPath("$.message").isNotEmpty())
+    }
 
     companion object {
-        private const val URL = "$EMPLOYEE_URL/1"
-        private const val INVALID_URL = "$EMPLOYEE_URL/2"
+        private const val URL = "$EMPLOYEE_URL/profiles/1"
+        private const val INVALID_URL = "$EMPLOYEE_URL/profiles/2"
     }
 }
