@@ -29,18 +29,63 @@ class EmployeeJooqRepository(
         code: ResponseCode = ResponseCode.INTERNAL_SERVER_ERROR
     ): T = this.get(field) ?: throw CustomException(code)
 
-    fun findEmployeeProfileList(reqDto: EmployeeProfileRequestDto.ListData):
-            List<EmployeeProfileResponseDto.ProfileListData> {
-        val pfMain = PROFILE.`as`("pf_main")
-        val ps = POSITION.`as`("ps")
-        val tm = TEAM.`as`("tm")
-        val dp = DEPARTMENT.`as`("dp")
-        val ac = ACCOUNT.`as`("ac")
-        val pfCr = PROFILE.`as`("pf_cr")
-        val pfUd = PROFILE.`as`("pf_ud")
-        val createdEmployeeName = pfCr.EMPLOYEE_NAME.`as`("created_employee_name")
-        val updatedEmployeeName = pfUd.EMPLOYEE_NAME.`as`("updated_employee_name")
+    private fun baseEmployeeProfileQuery() =
+        ctx.select(
+            pfMain.ID,
+            pfMain.EMPLOYEE_CODE,
+            pfMain.EMPLOYEE_ROLE,
+            pfMain.EMPLOYEE_NAME,
+            ps.POSITION_CODE,
+            ps.POSITION_NAME,
+            tm.TEAM_CODE,
+            tm.TEAM_NAME,
+            dp.DEPARTMENT_CODE,
+            dp.DEPARTMENT_NAME,
+            ac.PHONE,
+            ac.EMAIL,
+            pfMain.CREATED_BY,
+            createdEmployeeName,
+            pfMain.UPDATED_BY,
+            updatedEmployeeName,
+            pfMain.CREATED_AT,
+            pfMain.UPDATED_AT,
+            pfMain.DELETED_AT
+        )
+            .from(pfMain)
+            .join(ps).on(pfMain.POSITION_ID.eq(ps.ID))
+            .join(tm).on(pfMain.TEAM_ID.eq(tm.ID))
+            .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
+            .join(ac).on(pfMain.ID.eq(ac.ID))
+            .join(pfCr).on(pfMain.CREATED_BY.eq(pfCr.ID))
+            .join(pfUd).on(pfMain.UPDATED_BY.eq(pfUd.ID))
+            .where(pfMain.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT))
 
+    private fun Record.toEmployeeProfileData() =
+        EmployeeProfileResponseDto.ProfileData(
+            employeeId = required(pfMain.ID),
+            employeeCode = required(pfMain.EMPLOYEE_CODE),
+            employeeRole = required(pfMain.EMPLOYEE_ROLE),
+            employeeName = required(pfMain.EMPLOYEE_NAME),
+            positionCode = required(ps.POSITION_CODE),
+            positionName = required(ps.POSITION_NAME),
+            departmentCode = required(dp.DEPARTMENT_CODE),
+            departmentName = required(dp.DEPARTMENT_NAME),
+            teamCode = required(tm.TEAM_CODE),
+            teamName = required(tm.TEAM_NAME),
+            phone = required(ac.PHONE),
+            email = required(ac.EMAIL),
+            createdBy = required(pfMain.CREATED_BY),
+            createdEmployeeName = required(createdEmployeeName),
+            updatedBy = required(pfMain.UPDATED_BY),
+            updatedEmployeeName = required(updatedEmployeeName),
+            createdAt = required(pfMain.CREATED_AT),
+            updatedAt = required(pfMain.UPDATED_AT),
+            deletedAt = this[pfMain.DELETED_AT]
+        )
+
+
+    fun findEmployeeProfileList(reqDto: EmployeeProfileRequestDto.ListData):
+            List<EmployeeProfileResponseDto.ProfileData> {
         val sortFields = when (reqDto.sortPath) {
             EmployeeProfileSortPath.POSITION -> listOf(
                 ps.POSITION_CODE,
@@ -73,60 +118,17 @@ class EmployeeJooqRepository(
                 }
             }
 
-        return ctx.select(
-            pfMain.ID,
-            pfMain.EMPLOYEE_CODE,
-            pfMain.EMPLOYEE_ROLE,
-            pfMain.EMPLOYEE_NAME,
-            ps.POSITION_CODE,
-            ps.POSITION_NAME,
-            tm.TEAM_CODE,
-            tm.TEAM_NAME,
-            dp.DEPARTMENT_CODE,
-            dp.DEPARTMENT_NAME,
-            ac.PHONE,
-            ac.EMAIL,
-            pfMain.CREATED_BY,
-            createdEmployeeName,
-            pfMain.UPDATED_BY,
-            updatedEmployeeName,
-            pfMain.CREATED_AT,
-            pfMain.UPDATED_AT,
-            pfMain.DELETED_AT
-        ).from(pfMain)
-            .join(ps).on(pfMain.POSITION_ID.eq(ps.ID))
-            .join(tm).on(pfMain.TEAM_ID.eq(tm.ID))
-            .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
-            .join(ac).on(pfMain.ID.eq(ac.ID))
-            .join(pfCr).on(pfMain.CREATED_BY.eq(pfCr.ID))
-            .join(pfUd).on(pfMain.UPDATED_BY.eq(pfUd.ID))
-            .where(pfMain.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT))
+        return baseEmployeeProfileQuery()
             .orderBy(orderCondition)
             .limit(reqDto.size)
             .offset((reqDto.page - 1) * reqDto.size)
-            .fetch { rc ->
-                EmployeeProfileResponseDto.ProfileListData(
-                    employeeId = rc.required(pfMain.ID, ResponseCode.INTERNAL_SERVER_ERROR),
-                    employeeCode = rc.required(pfMain.EMPLOYEE_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    employeeRole = rc.required(pfMain.EMPLOYEE_ROLE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    employeeName = rc.required(pfMain.EMPLOYEE_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
-                    positionCode = rc.required(ps.POSITION_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    positionName = rc.required(ps.POSITION_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
-                    departmentCode = rc.required(dp.DEPARTMENT_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    departmentName = rc.required(dp.DEPARTMENT_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
-                    teamCode = rc.required(tm.TEAM_CODE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    teamName = rc.required(tm.TEAM_NAME, ResponseCode.INTERNAL_SERVER_ERROR),
-                    phone = rc.required(ac.PHONE, ResponseCode.INTERNAL_SERVER_ERROR),
-                    email = rc.required(ac.EMAIL, ResponseCode.INTERNAL_SERVER_ERROR),
-                    createdBy = rc.required(pfMain.CREATED_BY, ResponseCode.INTERNAL_SERVER_ERROR),
-                    createdEmployeeName = rc.required(createdEmployeeName, ResponseCode.INTERNAL_SERVER_ERROR),
-                    updatedBy = rc.required(pfMain.UPDATED_BY, ResponseCode.INTERNAL_SERVER_ERROR),
-                    updatedEmployeeName = rc.required(updatedEmployeeName, ResponseCode.INTERNAL_SERVER_ERROR),
-                    createdAt = rc.required(pfMain.CREATED_AT, ResponseCode.INTERNAL_SERVER_ERROR),
-                    updatedAt = rc.required(pfMain.UPDATED_AT, ResponseCode.INTERNAL_SERVER_ERROR),
-                    deletedAt = rc[pfMain.DELETED_AT]
-                )
-            }
+            .fetch { it.toEmployeeProfileData() }
+    }
+
+    fun findEmployeeProfileByEmployeeId(employeeId: Long): EmployeeProfileResponseDto.ProfileData? {
+        return baseEmployeeProfileQuery()
+            .and(pfMain.ID.eq(employeeId))
+            .fetchOne { it.toEmployeeProfileData() }
     }
 
     fun findDepartmentList(): List<EmployeeProfileResponseDto.Department> {
@@ -142,8 +144,9 @@ class EmployeeJooqRepository(
                     tm.ID,
                     tm.TEAM_CODE,
                     tm.TEAM_NAME
-                ).from(tm)
-                    .join(dp).on(tm.DEPARTMENT_ID.eq(dp.ID))
+                )
+                    .from(tm)
+                    .where(tm.DEPARTMENT_ID.eq(dp.ID))
                     .orderBy(tm.ID.asc())
             ).convertFrom { rs ->
                 rs.mapNotNull { rc ->
@@ -190,4 +193,20 @@ class EmployeeJooqRepository(
                 PROFILE.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT)
             )
         )
+
+    companion object {
+        private val pfMain = PROFILE.`as`("pf_main")
+        private val ps = POSITION.`as`("ps")
+        private val tm = TEAM.`as`("tm")
+        private val dp = DEPARTMENT.`as`("dp")
+        private val ac = ACCOUNT.`as`("ac")
+        private val pfCr = PROFILE.`as`("pf_cr")
+        private val pfUd = PROFILE.`as`("pf_ud")
+
+        private val createdEmployeeName =
+            pfCr.EMPLOYEE_NAME.`as`("created_employee_name")
+
+        private val updatedEmployeeName =
+            pfUd.EMPLOYEE_NAME.`as`("updated_employee_name")
+    }
 }

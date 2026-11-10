@@ -122,7 +122,7 @@ interface EmployeeProfileResponseDto {
         val incentiveSalary: Long
     )
 
-    data class ProfileListData(
+    data class ProfileData(
         override val employeeId: Long,
         override val employeeCode: String,
         override val employeeRole: EmployeeRole,
@@ -166,7 +166,7 @@ interface EmployeeProfileResponseDto {
 
     @Schema(name = "EmployeeProfileListResponse")
     data class ListData(
-        val employeeProfiles: PageResponse<ProfileListData>,
+        val employeeProfiles: PageResponse<ProfileData>,
 
         @get:ArraySchema(schema = Schema(implementation = Department::class))
         val departments: List<Department>,
