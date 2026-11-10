@@ -26,12 +26,6 @@ class AuthJooqRepository(
         code: ResponseCode = ResponseCode.INTERNAL_SERVER_ERROR
     ): T = this.get(field) ?: throw CustomException(code)
 
-    private val ac = ACCOUNT.`as`("ac")
-    private val pf = PROFILE.`as`("pf")
-    private val tm = TEAM.`as`("tm")
-    private val dp = DEPARTMENT.`as`("dp")
-    private val ps = POSITION.`as`("ps")
-
     private fun joinForLoginData() =
         ac.join(pf).on(ac.ID.eq(pf.ID))
             .join(tm).on(pf.TEAM_ID.eq(tm.ID))
@@ -117,4 +111,12 @@ class AuthJooqRepository(
         ctx.deleteFrom(REFRESH_TOKEN)
             .where(REFRESH_TOKEN.TOKEN.eq(refreshToken))
             .execute()
+
+    companion object {
+        private val ac = ACCOUNT.`as`("ac")
+        private val pf = PROFILE.`as`("pf")
+        private val tm = TEAM.`as`("tm")
+        private val dp = DEPARTMENT.`as`("dp")
+        private val ps = POSITION.`as`("ps")
+    }
 }

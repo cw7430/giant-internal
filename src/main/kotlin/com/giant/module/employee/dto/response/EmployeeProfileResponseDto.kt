@@ -122,7 +122,7 @@ interface EmployeeProfileResponseDto {
         val incentiveSalary: Long
     )
 
-    data class ProfileListData(
+    data class ProfileData(
         override val employeeId: Long,
         override val employeeCode: String,
         override val employeeRole: EmployeeRole,
@@ -166,7 +166,7 @@ interface EmployeeProfileResponseDto {
 
     @Schema(name = "EmployeeProfileListResponse")
     data class ListData(
-        val employeeProfiles: PageResponse<ProfileListData>,
+        val employeeProfiles: PageResponse<ProfileData>,
 
         @get:ArraySchema(schema = Schema(implementation = Department::class))
         val departments: List<Department>,
@@ -198,7 +198,7 @@ interface EmployeeProfileResponseDto {
         override val updatedEmployeeName: String,
         override val createdAt: Instant,
         override val updatedAt: Instant,
-        override val deletedAt: Instant,
+        override val deletedAt: Instant?,
 
         @get:ArraySchema(schema = Schema(implementation = Department::class))
         val departments: List<Department>,
@@ -228,5 +228,38 @@ interface EmployeeProfileResponseDto {
         createdAt,
         updatedAt,
         deletedAt
-    ), EmployeeProfileResponseDto
+    ), EmployeeProfileResponseDto {
+        companion object {
+            fun of(
+                profiles: ProfileData,
+                departments: List<Department>,
+                positions: List<Position>,
+                allowedProfileTeams: Set<String>
+            ): Detail =
+                Detail(
+                    employeeId = profiles.employeeId,
+                    employeeCode = profiles.employeeCode,
+                    employeeRole = profiles.employeeRole,
+                    employeeName = profiles.employeeName,
+                    positionCode = profiles.positionCode,
+                    positionName = profiles.positionName,
+                    departmentCode = profiles.departmentCode,
+                    departmentName = profiles.departmentName,
+                    teamCode = profiles.teamCode,
+                    teamName = profiles.teamName,
+                    phone = profiles.phone,
+                    email = profiles.email,
+                    createdBy = profiles.createdBy,
+                    createdEmployeeName = profiles.createdEmployeeName,
+                    updatedBy = profiles.updatedBy,
+                    updatedEmployeeName = profiles.updatedEmployeeName,
+                    createdAt = profiles.createdAt,
+                    updatedAt = profiles.updatedAt,
+                    deletedAt = profiles.deletedAt,
+                    departments = departments,
+                    positions = positions,
+                    allowedProfileTeams = allowedProfileTeams
+                )
+        }
+    }
 }

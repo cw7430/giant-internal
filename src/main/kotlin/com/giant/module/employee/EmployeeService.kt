@@ -1,6 +1,8 @@
 package com.giant.module.employee
 
+import com.giant.common.api.exception.CustomException
 import com.giant.common.api.response.PageResponse
+import com.giant.common.api.type.ResponseCode
 import com.giant.common.config.security.JwtUtil
 import com.giant.module.auth.repository.AuthJooqRepository
 import com.giant.module.employee.dto.request.EmployeeProfileRequestDto
@@ -37,6 +39,21 @@ class EmployeeService(
             ),
             departments,
             positions,
+            allowedProfileTeams = ALLOWED_PROFILE_TEAMS
+        )
+    }
+
+    fun getEmployeeProfileDetail(employeeId: Long): EmployeeProfileResponseDto.Detail {
+        val accountId = jwtUtil.getCurrentUserId()
+        val employeeProfile = employeeJooqRepository.findEmployeeProfileByEmployeeId(employeeId)
+            ?: throw CustomException(ResponseCode.RESOURCE_NOT_FOUND)
+        val departments = employeeJooqRepository.findDepartmentList()
+        val positions = employeeJooqRepository.findPositionList()
+
+        log.info { "Employee Profile requested by account ID:${accountId}" }
+
+        return EmployeeProfileResponseDto.Detail.of(
+            employeeProfile, departments, positions,
             allowedProfileTeams = ALLOWED_PROFILE_TEAMS
         )
     }
