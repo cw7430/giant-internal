@@ -58,6 +58,18 @@ class EmployeeService(
         )
     }
 
+    fun getEmployeeCode(): EmployeeProfileResponseDto.EmployeeCode {
+        val accountId = jwtUtil.getCurrentUserId()
+        val seq = employeeJooqRepository.findEmployeeCodeSeqNextVal()
+            ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
+
+        log.info { "Employee Code requested by account ID:${accountId}" }
+
+        return EmployeeProfileResponseDto.EmployeeCode(
+            employeeCode = "EMP-${seq.toString().padStart(3, '0')}"
+        )
+    }
+
     companion object {
         private val ALLOWED_PROFILE_TEAMS = setOf("TM100", "TM200")
     }

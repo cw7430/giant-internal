@@ -262,4 +262,10 @@ interface EmployeeProfileResponseDto {
                 )
         }
     }
+
+    @Schema(name = "EmployeeCodeResponse")
+    data class EmployeeCode(
+        @get:Schema(description = "사번", example = "EMP001")
+        val employeeCode: String
+    )
 }
