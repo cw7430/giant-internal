@@ -12,6 +12,7 @@ import org.jooq.Field
 import org.jooq.Record
 import org.jooq.SortField
 import org.jooq.generated.auth.tables.references.ACCOUNT
+import org.jooq.generated.employee.sequences.EMPLOYEE_CODE_SEQ
 import org.jooq.generated.employee.tables.references.DEPARTMENT
 import org.jooq.generated.employee.tables.references.POSITION
 import org.jooq.generated.employee.tables.references.PROFILE
@@ -189,10 +190,15 @@ class EmployeeJooqRepository(
 
     fun countEmployeeProfileList() =
         ctx.fetchCount(
-            DSL.selectFrom(PROFILE).where(
-                PROFILE.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT)
+            DSL.selectFrom(pfMain).where(
+                pfMain.EMPLOYEE_ROLE.ne(EmployeeRole.LEFT)
             )
         )
+
+    fun findEmployeeCodeSeqNextVal(): Long? =
+        ctx.select(EMPLOYEE_CODE_SEQ.nextval())
+            .fetchSingle()
+            .value1()
 
     companion object {
         private val pfMain = PROFILE.`as`("pf_main")

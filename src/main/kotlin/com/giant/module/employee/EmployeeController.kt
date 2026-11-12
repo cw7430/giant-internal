@@ -87,7 +87,7 @@ class EmployeeController(
             responseCode = "200", description = "직원 상세 조회 성공", content = [
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = EmployeeProfileRequestDto.ListData::class)
+                    schema = Schema(implementation = EmployeeProfileResponseDto.Detail::class)
                 )
             ]
         ),
@@ -133,4 +133,51 @@ class EmployeeController(
     fun getEmployeeProfileDetail(@PathVariable employeeId: Long):
             ResponseEntity<EmployeeProfileResponseDto.Detail> =
         ResponseEntity.ok(employeeService.getEmployeeProfileDetail(employeeId))
+
+
+    @GetMapping("/profiles/employee-code")
+    @Operation(summary = "직원상세")
+    @SecurityRequirement(name = "access-token")
+    @ApiResponses(
+        ApiResponse(
+            responseCode = "200", description = "직원 상세 조회 성공", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = EmployeeProfileResponseDto.EmployeeCode::class)
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "401", description = "인증오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(
+                        oneOf = [
+                            ErrorResponseDoc.Unauthorized::class,
+                            ErrorResponseDoc.ExpiredToken::class,
+                            ErrorResponseDoc.InvalidToken::class
+                        ]
+                    )
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "403", description = "Api Key 오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.KeyError::class)
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "500", description = "기타오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.InternalServerError::class)
+                )
+            ]
+        )
+    )
+    fun getEmployeeCode(): ResponseEntity<EmployeeProfileResponseDto.EmployeeCode> =
+        ResponseEntity.ok(employeeService.getEmployeeCode())
 }
