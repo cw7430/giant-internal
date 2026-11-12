@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 private val log = KotlinLogging.logger {}
 
@@ -34,6 +35,18 @@ class GlobalExceptionHandler {
                 errors
             ),
             ResponseCode.VALIDATION_ERROR.status
+        )
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundException(
+        ex: NoResourceFoundException
+    ): ResponseEntity<ErrorResponseDto> {
+        log.warn { "Endpoint not found: ${ex.resourcePath}" }
+
+        return ResponseEntity(
+            ErrorResponseDto.from(ResponseCode.ENDPOINT_NOT_FOUND),
+            ResponseCode.ENDPOINT_NOT_FOUND.status
         )
     }
 
