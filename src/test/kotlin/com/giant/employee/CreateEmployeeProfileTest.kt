@@ -39,7 +39,7 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     fun failWithValidationError() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
         post(URL)
-            .key().auth(accessToken).body(INVALID_DATA).send().andExpect(status().isBadRequest)
+            .key().auth(accessToken).body(INVALID_DATA).send().andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -102,7 +102,7 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     fun failWithDuplicateResource() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
         post(URL)
-            .key().auth(accessToken).body(DUPLICATED_DATA).send().andExpect(status().isConflict)
+            .key().auth(accessToken).body(DUPLICATED_DATA).send().andExpect(status().isConflict())
             .andExpect(jsonPath("$.code").value(ResponseCode.DUPLICATE_RESOURCE.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
