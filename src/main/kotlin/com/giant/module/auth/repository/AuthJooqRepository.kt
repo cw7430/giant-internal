@@ -93,23 +93,37 @@ class AuthJooqRepository(
 
     fun existRefreshTokenByAccountIdAndToken(accountId: Long, refreshToken: String): Boolean =
         ctx.fetchExists(
-            DSL.selectOne().from(REFRESH_TOKEN)
+            DSL.selectOne().from(rt)
                 .where(
-                    REFRESH_TOKEN.ACCOUNT_ID.eq(accountId),
-                    REFRESH_TOKEN.TOKEN.eq(refreshToken)
+                    rt.ACCOUNT_ID.eq(accountId),
+                    rt.TOKEN.eq(refreshToken)
                 )
         )
 
+    fun createAccountAndGet(
+        userName: String,
+        passwordHash: String,
+        phone: String,
+        email: String
+    ) =
+        ctx.insertInto(ac)
+            .set(ac.USER_NAME, userName)
+            .set(ac.PASSWORD_HASH, passwordHash)
+            .set(ac.PHONE, phone)
+            .set(ac.EMAIL, email)
+            .returning()
+            .fetchOne()
+
     fun createRefreshToken(accountId: Long, refreshToken: String, expiresAt: Instant) =
-        ctx.insertInto(REFRESH_TOKEN)
-            .set(REFRESH_TOKEN.ACCOUNT_ID, accountId)
-            .set(REFRESH_TOKEN.TOKEN, refreshToken)
-            .set(REFRESH_TOKEN.EXPIRES_AT, expiresAt)
+        ctx.insertInto(rt)
+            .set(rt.ACCOUNT_ID, accountId)
+            .set(rt.TOKEN, refreshToken)
+            .set(rt.EXPIRES_AT, expiresAt)
             .execute()
 
     fun deleteRefreshTokenByRefreshToken(refreshToken: String) =
-        ctx.deleteFrom(REFRESH_TOKEN)
-            .where(REFRESH_TOKEN.TOKEN.eq(refreshToken))
+        ctx.deleteFrom(rt)
+            .where(rt.TOKEN.eq(refreshToken))
             .execute()
 
     companion object {
@@ -118,5 +132,6 @@ class AuthJooqRepository(
         private val tm = TEAM.`as`("tm")
         private val dp = DEPARTMENT.`as`("dp")
         private val ps = POSITION.`as`("ps")
+        private val rt = REFRESH_TOKEN.`as`("rt")
     }
 }

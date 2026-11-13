@@ -11,6 +11,7 @@ import com.giant.module.employee.repository.EmployeeJooqRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val log = KotlinLogging.logger {}
 
@@ -21,6 +22,15 @@ class EmployeeService(
     private val authJooqRepository: AuthJooqRepository,
     private val employeeJooqRepository: EmployeeJooqRepository
 ) {
+    private fun checkProfilePermission(employeeId: Long) {
+        val teamCode = employeeJooqRepository.findTeamCodeByEmployeeId(employeeId)
+            ?: throw CustomException(ResponseCode.UNAUTHORIZED)
+
+        if (!ALLOWED_PROFILE_TEAMS.contains(teamCode)) {
+            throw CustomException(ResponseCode.FORBIDDEN)
+        }
+    }
+
     fun getEmployeeProfileList(reqDto: EmployeeProfileRequestDto.ListData):
             EmployeeProfileResponseDto.ListData {
         val accountId = jwtUtil.getCurrentUserId()
@@ -68,6 +78,41 @@ class EmployeeService(
         return EmployeeProfileResponseDto.EmployeeCode(
             employeeCode = "EMP-${seq.toString().padStart(3, '0')}"
         )
+    }
+
+    @Transactional
+    fun createEmployeeProfile(reqDto: EmployeeProfileRequestDto.Create) {
+        val accountId = jwtUtil.getCurrentUserId()
+
+        checkProfilePermission(accountId)
+
+        if(employeeJooqRepository.existEmployeeProfileByEmployeeCode(reqDto.employeeCode)) {
+            throw CustomException(ResponseCode.DUPLICATE_RESOURCE)
+        }
+
+        val passwordHash = passwordEncoder.encode(reqDto.employeeCode)
+            ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
+
+        val account = authJooqRepository.createAccountAndGet(
+            userName = reqDto.employeeCode,
+            passwordHash,
+            phone = reqDto.phone,
+            email = reqDto.email
+        ) ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
+
+        val createdEmployeeId = account.id
+            ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
+
+        employeeJooqRepository.createProfile(
+            employeeId = createdEmployeeId,
+            employeeCode = reqDto.employeeCode,
+            employeeName = reqDto.employeeName,
+            teamCode = reqDto.teamCode,
+            positionCode = reqDto.positionCode,
+            createdEmployeeId = accountId
+        )
+
+        log.info { "Create Employee requested by account ID:${accountId}, created employee ID:${createdEmployeeId}" }
     }
 
     companion object {
