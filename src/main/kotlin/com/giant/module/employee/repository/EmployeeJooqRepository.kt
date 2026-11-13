@@ -168,6 +168,15 @@ class EmployeeJooqRepository(
         }
     }
 
+    fun findTeamCodeByEmployeeId(employeeId: Long): String? =
+        ctx.select(tm.TEAM_CODE)
+            .from(pfMain)
+            .join(tm).on(
+                pfMain.TEAM_ID.eq(tm.ID).and(pfMain.ID.eq(employeeId))
+            )
+            .fetchSingle()
+            .value1()
+
     fun findPositionList(): List<EmployeeProfileResponseDto.Position> {
         val ps = POSITION.`as`("ps")
 
@@ -188,6 +197,11 @@ class EmployeeJooqRepository(
         }
     }
 
+    fun findEmployeeCodeSeqNextVal(): Long? =
+        ctx.select(EMPLOYEE_CODE_SEQ.nextval())
+            .fetchSingle()
+            .value1()
+
     fun countEmployeeProfileList() =
         ctx.fetchCount(
             DSL.selectFrom(pfMain).where(
@@ -195,10 +209,43 @@ class EmployeeJooqRepository(
             )
         )
 
-    fun findEmployeeCodeSeqNextVal(): Long? =
-        ctx.select(EMPLOYEE_CODE_SEQ.nextval())
-            .fetchSingle()
-            .value1()
+    fun existEmployeeProfileByEmployeeCode(employeeCode: String) =
+        ctx.fetchExists(
+            DSL.selectOne().from(pfMain)
+                .where(
+                    pfMain.EMPLOYEE_CODE.eq(employeeCode)
+                )
+        )
+
+    fun createProfile(
+        employeeId: Long,
+        employeeCode: String,
+        employeeName: String,
+        teamCode: String,
+        positionCode: String,
+        createdEmployeeId: Long
+    ) =
+        ctx.insertInto(pfMain)
+            .set(pfMain.ID, employeeId)
+            .set(pfMain.EMPLOYEE_CODE, employeeCode)
+            .set(pfMain.EMPLOYEE_NAME, employeeName)
+            .set(
+                pfMain.TEAM_ID,
+                DSL.select(tm.ID)
+                    .from(tm)
+                    .where(tm.TEAM_CODE.eq(teamCode))
+                    .asField()
+            )
+            .set(
+                pfMain.POSITION_ID,
+                DSL.select(ps.ID)
+                    .from(ps)
+                    .where(ps.POSITION_CODE.eq(positionCode))
+                    .asField()
+            )
+            .set(pfMain.CREATED_BY, createdEmployeeId)
+            .set(pfMain.UPDATED_BY, createdEmployeeId)
+            .execute()
 
     companion object {
         private val pfMain = PROFILE.`as`("pf_main")
