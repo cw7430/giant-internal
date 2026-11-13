@@ -10,28 +10,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class CreateEmployeeProfileTest : EmployeeControllerTest() {
 
-    private fun getData(): EmployeeProfileRequestDto.Create {
-        val employeeCode = getEmployeeCode()
-
-        return EmployeeProfileRequestDto.Create(
-            employeeCode = employeeCode,
-            employeeName = "테스트",
-            phone = "010-0000-0000",
-            email = "email@email.com",
-            positionCode = "PSN80",
-            teamCode = "TM601",
-            employeeRole = EmployeeRole.EMPLOYEE
-        )
-    }
-
-
     @Test
     @DisplayName("직원 등록 - 성공")
     fun success() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        val data = getData()
         post(URL)
-            .key().auth(accessToken).body(data).send().andExpect(status().isNoContent())
+            .key().auth(accessToken).body(DATA).send().andExpect(status().isNoContent())
     }
 
     @Test
@@ -47,9 +31,8 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     @Test
     @DisplayName("직원 등록 - 인증 오류")
     fun failWithUnauthorized() {
-        val data = getData()
         post(URL)
-            .key().body(data).send().andExpect(status().isUnauthorized())
+            .key().body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.UNAUTHORIZED.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -57,9 +40,8 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     @Test
     @DisplayName("직원 등록 - 잘못 된 토큰")
     fun failWithInvalidToken() {
-        val data = getData()
         post(URL)
-            .key().auth(INVALID_TOKEN).body(data).send().andExpect(status().isUnauthorized())
+            .key().auth(INVALID_TOKEN).body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_TOKEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -68,9 +50,8 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     @DisplayName("직원 등록 - 만료 된 토큰")
     fun failWithExpiredToken() {
         val accessToken = authTestUtil.generateExpiredAccessToken(HR_LOGIN_DATA)
-        val data = getData()
         post(URL)
-            .key().auth(accessToken).body(data).send().andExpect(status().isUnauthorized())
+            .key().auth(accessToken).body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.EXPIRED_TOKEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -79,9 +60,8 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     @DisplayName("직원 등록 - 권한 오류")
     fun failWithForbidden() {
         val accessToken = authTestUtil.getTestToken(SALARY_LOGIN_DATA).accessToken
-        val data = getData()
         post(URL)
-            .key().auth(accessToken).body(data).send().andExpect(status().isForbidden())
+            .key().auth(accessToken).body(DATA).send().andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value(ResponseCode.FORBIDDEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -90,9 +70,8 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
     @DisplayName("직원 등록 - Api Key 오류")
     fun failWithKeyError() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        val data = getData()
         post(URL)
-            .auth(accessToken).body(data).send().andExpect(status().isForbidden())
+            .auth(accessToken).body(DATA).send().andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value(ResponseCode.KEY_ERROR.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
@@ -109,6 +88,16 @@ class CreateEmployeeProfileTest : EmployeeControllerTest() {
 
     companion object {
         private const val URL = "$EMPLOYEE_URL/profiles"
+
+        private val DATA = EmployeeProfileRequestDto.Create(
+            employeeCode = "EMP200",
+            employeeName = "테스트",
+            phone = "010-0000-0000",
+            email = "email@email.com",
+            positionCode = "PSN80",
+            teamCode = "TM601",
+            employeeRole = EmployeeRole.EMPLOYEE
+        )
 
         private val DUPLICATED_DATA =
             EmployeeProfileRequestDto.Create(

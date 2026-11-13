@@ -2,16 +2,8 @@ package com.giant.employee
 
 import com.giant.BaseIntegrationTest
 import com.giant.module.auth.dto.request.AuthRequestDto
-import com.giant.module.employee.EmployeeService
-import org.springframework.beans.factory.annotation.Autowired
 
 class EmployeeControllerTest : BaseIntegrationTest() {
-
-    @Autowired
-    private lateinit var employeeService: EmployeeService
-
-    protected fun getEmployeeCode(): String =
-        employeeService.getEmployeeCode().employeeCode
 
     companion object {
         protected const val EMPLOYEE_URL = "$BASE_URL/hr"
