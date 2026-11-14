@@ -217,7 +217,7 @@ class EmployeeJooqRepository(
                 )
         )
 
-    fun existEmployeeProfileByEmployeeId(employeeId: Long) =
+    fun existActiveEmployeeProfileByEmployeeId(employeeId: Long) =
         ctx.fetchExists(
             DSL.selectOne().from(pfMain)
                 .where(

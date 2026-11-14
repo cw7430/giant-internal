@@ -131,7 +131,7 @@ class EmployeeController(
         ResponseEntity.ok(employeeService.getEmployeeProfileDetail(employeeId))
 
 
-    @GetMapping("/employee-code")
+    @GetMapping("/profiles/employee-code")
     @Operation(summary = "사번 생성")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -244,6 +244,78 @@ class EmployeeController(
     )
     fun createEmployeeProfile(@RequestBody @Valid reqDto: EmployeeProfileRequestDto.Create): ResponseEntity<Void> {
         employeeService.createEmployeeProfile(reqDto)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/profiles/{employeeId}")
+    @Operation(summary = "직원 정보 수정")
+    @SecurityRequirement(name = "access-token")
+    @ApiResponses(
+        ApiResponse(
+            responseCode = "200", description = "직원 등록 성공", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = EmployeeProfileRequestDto.ListData::class)
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "400", description = "입력값 오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.BadRequest::class)
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "401", description = "인증오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(
+                        oneOf = [
+                            ErrorResponseDoc.Unauthorized::class,
+                            ErrorResponseDoc.ExpiredToken::class,
+                            ErrorResponseDoc.InvalidToken::class
+                        ]
+                    )
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "403", description = "권한 오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(
+                        oneOf = [
+                            ErrorResponseDoc.Forbidden::class,
+                            ErrorResponseDoc.KeyError::class
+                        ]
+                    )
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "404", description = "없는 리소스", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.ResourceNotFound::class)
+                )
+            ]
+        ),
+        ApiResponse(
+            responseCode = "500", description = "기타오류", content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponseDoc.InternalServerError::class)
+                )
+            ]
+        )
+    )
+    fun updateEmployeeProfile(
+        @PathVariable employeeId: Long,
+        @RequestBody @Valid reqDto: EmployeeProfileRequestDto.Update
+    ): ResponseEntity<Void> {
+        employeeService.updateEmployeeProfile(employeeId, reqDto)
         return ResponseEntity.noContent().build()
     }
 }

@@ -116,6 +116,28 @@ class EmployeeService(
         log.info { "Create Employee requested by account ID:${accountId}, created employee ID:${createdEmployeeId}" }
     }
 
+    @Transactional
+    fun updateEmployeeProfile(employeeId: Long, reqDto: EmployeeProfileRequestDto.Update) {
+        val accountId = jwtUtil.getCurrentUserId()
+
+        checkProfilePermission(accountId)
+
+        if (!employeeJooqRepository.existActiveEmployeeProfileByEmployeeId(employeeId)) {
+            throw CustomException(ResponseCode.RESOURCE_NOT_FOUND)
+        }
+
+        employeeJooqRepository.updateProfile(
+            employeeId,
+            employeeName = reqDto.employeeName,
+            teamCode = reqDto.teamCode,
+            positionCode = reqDto.positionCode,
+            employeeRole = reqDto.employeeRole,
+            updatedEmployeeId = accountId
+        )
+
+        log.info { "Update Employee requested by account ID:${accountId}, updated employee ID:${employeeId}" }
+    }
+
     companion object {
         private val ALLOWED_PROFILE_TEAMS = setOf("TM100", "TM200")
     }
