@@ -217,6 +217,14 @@ class EmployeeJooqRepository(
                 )
         )
 
+    fun existEmployeeProfileByEmployeeId(employeeId: Long) =
+        ctx.fetchExists(
+            DSL.selectOne().from(pfMain)
+                .where(
+                    pfMain.ID.eq(employeeId)
+                )
+        )
+
     fun createProfile(
         employeeId: Long,
         employeeCode: String,
@@ -248,6 +256,34 @@ class EmployeeJooqRepository(
             .set(pfMain.CREATED_BY, createdEmployeeId)
             .set(pfMain.UPDATED_BY, createdEmployeeId)
             .execute()
+
+    fun updateProfile(
+        employeeId: Long,
+        employeeName: String,
+        teamCode: String,
+        positionCode: String,
+        employeeRole: EmployeeRole,
+        updatedEmployeeId: Long
+    ) =
+        ctx.update(pfMain)
+            .set(pfMain.EMPLOYEE_NAME, employeeName)
+            .set(
+                pfMain.TEAM_ID,
+                DSL.select(tm.ID)
+                    .from(tm)
+                    .where(tm.TEAM_CODE.eq(teamCode))
+                    .asField()
+            )
+            .set(
+                pfMain.POSITION_ID,
+                DSL.select(ps.ID)
+                    .from(ps)
+                    .where(ps.POSITION_CODE.eq(positionCode))
+                    .asField()
+            )
+            .set(pfMain.EMPLOYEE_ROLE, employeeRole)
+            .set(pfMain.UPDATED_BY, updatedEmployeeId)
+            .where(pfMain.ID.eq(employeeId))
 
     companion object {
         private val pfMain = PROFILE.`as`("pf_main")
