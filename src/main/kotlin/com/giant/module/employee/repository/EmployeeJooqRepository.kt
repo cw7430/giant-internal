@@ -223,6 +223,7 @@ class EmployeeJooqRepository(
         employeeName: String,
         teamCode: String,
         positionCode: String,
+        employeeRole: EmployeeRole,
         createdEmployeeId: Long
     ) =
         ctx.insertInto(pfMain)
@@ -243,6 +244,7 @@ class EmployeeJooqRepository(
                     .where(ps.POSITION_CODE.eq(positionCode))
                     .asField()
             )
+            .set(pfMain.EMPLOYEE_ROLE, employeeRole)
             .set(pfMain.CREATED_BY, createdEmployeeId)
             .set(pfMain.UPDATED_BY, createdEmployeeId)
             .execute()
