@@ -64,7 +64,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: quick-test-report
+          name: giant-test-report
           path: build/reports/tests/test/
           if-no-files-found: warn
           retention-days: 7

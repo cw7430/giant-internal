@@ -86,7 +86,7 @@ class EmployeeService(
 
         checkProfilePermission(accountId)
 
-        if(employeeJooqRepository.existEmployeeProfileByEmployeeCode(reqDto.employeeCode)) {
+        if (employeeJooqRepository.existEmployeeProfileByEmployeeCode(reqDto.employeeCode)) {
             throw CustomException(ResponseCode.DUPLICATE_RESOURCE)
         }
 
@@ -109,6 +109,7 @@ class EmployeeService(
             employeeName = reqDto.employeeName,
             teamCode = reqDto.teamCode,
             positionCode = reqDto.positionCode,
+            employeeRole = reqDto.employeeRole,
             createdEmployeeId = accountId
         )
 
