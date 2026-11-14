@@ -76,4 +76,31 @@ interface EmployeeProfileRequestDto {
         @get:Schema(description = "직책 권한", example = "EMPLOYEE")
         val employeeRole: EmployeeRole
     ) : EmployeeProfileRequestDto
+
+    @Schema(name = "UpdateEmployeeProfile")
+    data class Update(
+        @field:NotBlank(message = "사원 이름을 입력해주세요.")
+        @get:Schema(description = "사원 이름", example = "이사장")
+        val employeeName: String,
+
+        @field:NotBlank(message = "직급을 선택해주세요.")
+        @field:Pattern(
+            regexp = "^PSN\\d{2,3}$",
+            message = "직급 코드 형식이 올바르지 않습니다."
+        )
+        @get:Schema(description = "직급 코드", example = "PSN10")
+        val positionCode: String,
+
+        @field:NotBlank(message = "팀을 선택해주세요.")
+        @field:Pattern(
+            regexp = "^TM\\d{3}$",
+            message = "팀 코드 형식이 올바르지 않습니다."
+        )
+        @get:Schema(description = "팀 코드", example = "TM100")
+        val teamCode: String,
+
+        @field:NotNull(message = "직책을 선택해주세요.")
+        @get:Schema(description = "직책 권한", example = "EMPLOYEE")
+        val employeeRole: EmployeeRole
+    ) : EmployeeProfileRequestDto
 }

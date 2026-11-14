@@ -56,6 +56,6 @@ class GetEmployeeCodeTest : EmployeeControllerTest() {
     }
 
     companion object {
-        private const val URL = "$EMPLOYEE_URL/employee-code"
+        private const val URL = "$EMPLOYEE_URL/profiles/employee-code"
     }
 }
