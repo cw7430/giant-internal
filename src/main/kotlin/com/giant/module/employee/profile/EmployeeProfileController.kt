@@ -1,8 +1,8 @@
-package com.giant.module.employee
+package com.giant.module.employee.profile
 
 import com.giant.common.api.doc.ErrorResponseDoc
-import com.giant.module.employee.dto.request.EmployeeProfileRequestDto
-import com.giant.module.employee.dto.response.EmployeeProfileResponseDto
+import com.giant.module.employee.profile.dto.request.EmployeeProfileRequestDto
+import com.giant.module.employee.profile.dto.response.EmployeeProfileResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -15,12 +15,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/hr")
+@RequestMapping("/api/v1/hr/profiles")
 @Tag(name = "Employee Controller", description = "인사 API")
-class EmployeeController(
-    private val employeeService: EmployeeService
+class EmployeeProfileController(
+    private val employeeProfileService: EmployeeProfileService
 ) {
-    @GetMapping("/profiles")
+    @GetMapping
     @Operation(summary = "직원목록")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -73,9 +73,9 @@ class EmployeeController(
     )
     fun getEmployeeProfileList(@ModelAttribute @Valid reqDto: EmployeeProfileRequestDto.ListData):
             ResponseEntity<EmployeeProfileResponseDto.ListData> =
-        ResponseEntity.ok(employeeService.getEmployeeProfileList(reqDto))
+        ResponseEntity.ok(employeeProfileService.getEmployeeProfileList(reqDto))
 
-    @GetMapping("/profiles/{employeeId}")
+    @GetMapping("/{employeeId}")
     @Operation(summary = "직원상세")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -128,10 +128,10 @@ class EmployeeController(
     )
     fun getEmployeeProfileDetail(@PathVariable employeeId: Long):
             ResponseEntity<EmployeeProfileResponseDto.Detail> =
-        ResponseEntity.ok(employeeService.getEmployeeProfileDetail(employeeId))
+        ResponseEntity.ok(employeeProfileService.getEmployeeProfileDetail(employeeId))
 
 
-    @GetMapping("/profiles/employee-code")
+    @GetMapping("/employee-code")
     @Operation(summary = "사번 생성")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -175,10 +175,10 @@ class EmployeeController(
         )
     )
     fun getEmployeeCode(): ResponseEntity<EmployeeProfileResponseDto.EmployeeCode> =
-        ResponseEntity.ok(employeeService.getEmployeeCode())
+        ResponseEntity.ok(employeeProfileService.getEmployeeCode())
 
 
-    @PostMapping("/profiles")
+    @PostMapping
     @Operation(summary = "직원 등록")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -243,11 +243,11 @@ class EmployeeController(
         )
     )
     fun createEmployeeProfile(@RequestBody @Valid reqDto: EmployeeProfileRequestDto.Create): ResponseEntity<Void> {
-        employeeService.createEmployeeProfile(reqDto)
+        employeeProfileService.createEmployeeProfile(reqDto)
         return ResponseEntity.noContent().build()
     }
 
-    @PatchMapping("/profiles/{employeeId}")
+    @PatchMapping("/{employeeId}")
     @Operation(summary = "직원 정보 수정")
     @SecurityRequirement(name = "access-token")
     @ApiResponses(
@@ -315,7 +315,7 @@ class EmployeeController(
         @PathVariable employeeId: Long,
         @RequestBody @Valid reqDto: EmployeeProfileRequestDto.Update
     ): ResponseEntity<Void> {
-        employeeService.updateEmployeeProfile(employeeId, reqDto)
+        employeeProfileService.updateEmployeeProfile(employeeId, reqDto)
         return ResponseEntity.noContent().build()
     }
 }

@@ -1,107 +1,124 @@
-package com.giant.employee
+package com.giant.employee.profile
 
 import com.giant.common.api.type.ResponseCode
-import com.giant.module.employee.dto.request.EmployeeProfileRequestDto
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.dto.request.EmployeeProfileRequestDto
+import com.giant.module.employee.profile.type.EmployeeRole
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class UpdateEmployeeProfileTest : EmployeeControllerTest() {
+class CreateEmployeeProfileTest : EmployeeProfileControllerTest() {
 
     @Test
-    @DisplayName("직원 정보 수정 - 성공")
+    @DisplayName("직원 등록 - 성공")
     fun success() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        patch(URL)
+        post(URL)
             .key().auth(accessToken).body(DATA).send().andExpect(status().isNoContent())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - 잘못 된 입력 값")
+    @DisplayName("직원 등록 - 잘못 된 입력 값")
     fun failWithValidationError() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        patch(URL)
+        post(URL)
             .key().auth(accessToken).body(INVALID_DATA).send().andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(ResponseCode.VALIDATION_ERROR.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - 인증 오류")
+    @DisplayName("직원 등록 - 인증 오류")
     fun failWithUnauthorized() {
-        patch(URL)
+        post(URL)
             .key().body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.UNAUTHORIZED.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - 잘못 된 토큰")
+    @DisplayName("직원 등록 - 잘못 된 토큰")
     fun failWithInvalidToken() {
-        patch(URL)
+        post(URL)
             .key().auth(INVALID_TOKEN).body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.INVALID_TOKEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - 만료 된 토큰")
+    @DisplayName("직원 등록 - 만료 된 토큰")
     fun failWithExpiredToken() {
         val accessToken = authTestUtil.generateExpiredAccessToken(HR_LOGIN_DATA)
-        patch(URL)
+        post(URL)
             .key().auth(accessToken).body(DATA).send().andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value(ResponseCode.EXPIRED_TOKEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - 권한 오류")
+    @DisplayName("직원 등록 - 권한 오류")
     fun failWithForbidden() {
         val accessToken = authTestUtil.getTestToken(SALARY_LOGIN_DATA).accessToken
-        patch(URL)
+        post(URL)
             .key().auth(accessToken).body(DATA).send().andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value(ResponseCode.FORBIDDEN.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 정보 수정 - Api Key 오류")
+    @DisplayName("직원 등록 - Api Key 오류")
     fun failWithKeyError() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        patch(URL)
+        post(URL)
             .auth(accessToken).body(DATA).send().andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value(ResponseCode.KEY_ERROR.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     @Test
-    @DisplayName("직원 등록 - 없는 리소스")
+    @DisplayName("직원 등록 - 중복된 사번")
     fun failWithDuplicateResource() {
         val accessToken = authTestUtil.getTestToken(HR_LOGIN_DATA).accessToken
-        patch(INVALID_URL)
-            .key().auth(accessToken).body(DATA).send().andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.code").value(ResponseCode.RESOURCE_NOT_FOUND.code))
+        post(URL)
+            .key().auth(accessToken).body(DUPLICATED_DATA).send().andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value(ResponseCode.DUPLICATE_RESOURCE.code))
             .andExpect(jsonPath("$.message").isNotEmpty())
     }
 
     companion object {
-        private const val URL = "$EMPLOYEE_URL/profiles/1"
-        private const val INVALID_URL = "$EMPLOYEE_URL/profiles/100000"
+        private const val URL = PROFILE_URL
 
-        private val DATA = EmployeeProfileRequestDto.Update(
-            employeeName = "이대표",
-            positionCode = "PSN10",
-            teamCode = "TM100",
-            employeeRole = EmployeeRole.DEPARTMENT_CHIEF
+        private val DATA = EmployeeProfileRequestDto.Create(
+            employeeCode = "EMP200",
+            employeeName = "테스트",
+            phone = "010-0000-0000",
+            email = "email@email.com",
+            positionCode = "PSN80",
+            teamCode = "TM601",
+            employeeRole = EmployeeRole.EMPLOYEE
         )
 
-        private val INVALID_DATA = EmployeeProfileRequestDto.Update(
-            employeeName = " ",
-            positionCode = "3423rg",
-            teamCode = "4982748923r",
-            employeeRole = EmployeeRole.DEPARTMENT_CHIEF
-        )
+        private val DUPLICATED_DATA =
+            EmployeeProfileRequestDto.Create(
+                employeeCode = "EMP001",
+                employeeName = "테스트",
+                phone = "010-0000-0000",
+                email = "email@email.com",
+                positionCode = "PSN80",
+                teamCode = "TM601",
+                employeeRole = EmployeeRole.EMPLOYEE
+            )
+
+        private val INVALID_DATA =
+            EmployeeProfileRequestDto.Create(
+                employeeCode = "46541",
+                employeeName = " ",
+                phone = "wad2132",
+                email = "af21r",
+                positionCode = "3423rg",
+                teamCode = "4982748923r",
+                employeeRole = EmployeeRole.EMPLOYEE
+            )
     }
 }

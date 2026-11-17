@@ -1,7 +1,7 @@
-package com.giant.module.employee.dto.response
+package com.giant.module.employee.profile.dto.response
 
 import com.giant.common.api.response.PageResponse
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.type.EmployeeRole
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import tools.jackson.databind.annotation.JsonSerialize

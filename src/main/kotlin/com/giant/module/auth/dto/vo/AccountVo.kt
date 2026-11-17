@@ -1,7 +1,7 @@
 package com.giant.module.auth.dto.vo
 
 import com.giant.module.auth.type.AuthRole
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.type.EmployeeRole
 
 sealed interface AccountVo {
     val accountId: Long

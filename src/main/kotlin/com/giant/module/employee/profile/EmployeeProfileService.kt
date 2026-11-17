@@ -1,13 +1,13 @@
-package com.giant.module.employee
+package com.giant.module.employee.profile
 
 import com.giant.common.api.exception.CustomException
 import com.giant.common.api.response.PageResponse
 import com.giant.common.api.type.ResponseCode
 import com.giant.common.config.security.JwtUtil
 import com.giant.module.auth.repository.AuthJooqRepository
-import com.giant.module.employee.dto.request.EmployeeProfileRequestDto
-import com.giant.module.employee.dto.response.EmployeeProfileResponseDto
-import com.giant.module.employee.repository.EmployeeJooqRepository
+import com.giant.module.employee.profile.dto.request.EmployeeProfileRequestDto
+import com.giant.module.employee.profile.dto.response.EmployeeProfileResponseDto
+import com.giant.module.employee.profile.repository.EmployeeProfileJooqRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -16,14 +16,14 @@ import org.springframework.transaction.annotation.Transactional
 private val log = KotlinLogging.logger {}
 
 @Service
-class EmployeeService(
+class EmployeeProfileService(
     private val jwtUtil: JwtUtil,
     private val passwordEncoder: PasswordEncoder,
     private val authJooqRepository: AuthJooqRepository,
-    private val employeeJooqRepository: EmployeeJooqRepository
+    private val employeeProfileJooqRepository: EmployeeProfileJooqRepository
 ) {
     private fun checkProfilePermission(employeeId: Long) {
-        val teamCode = employeeJooqRepository.findTeamCodeByEmployeeId(employeeId)
+        val teamCode = employeeProfileJooqRepository.findTeamCodeByEmployeeId(employeeId)
             ?: throw CustomException(ResponseCode.UNAUTHORIZED)
 
         if (!ALLOWED_PROFILE_TEAMS.contains(teamCode)) {
@@ -34,10 +34,10 @@ class EmployeeService(
     fun getEmployeeProfileList(reqDto: EmployeeProfileRequestDto.ListData):
             EmployeeProfileResponseDto.ListData {
         val accountId = jwtUtil.getCurrentUserId()
-        val employeeProfiles = employeeJooqRepository.findEmployeeProfileList(reqDto)
-        val departments = employeeJooqRepository.findDepartmentList()
-        val positions = employeeJooqRepository.findPositionList()
-        val totalElements = employeeJooqRepository.countEmployeeProfileList().toLong()
+        val employeeProfiles = employeeProfileJooqRepository.findEmployeeProfileList(reqDto)
+        val departments = employeeProfileJooqRepository.findDepartmentList()
+        val positions = employeeProfileJooqRepository.findPositionList()
+        val totalElements = employeeProfileJooqRepository.countEmployeeProfileList().toLong()
 
         log.info { "Employee Profiles requested by account ID:${accountId}" }
 
@@ -55,10 +55,10 @@ class EmployeeService(
 
     fun getEmployeeProfileDetail(employeeId: Long): EmployeeProfileResponseDto.Detail {
         val accountId = jwtUtil.getCurrentUserId()
-        val employeeProfile = employeeJooqRepository.findEmployeeProfileByEmployeeId(employeeId)
+        val employeeProfile = employeeProfileJooqRepository.findEmployeeProfileByEmployeeId(employeeId)
             ?: throw CustomException(ResponseCode.RESOURCE_NOT_FOUND)
-        val departments = employeeJooqRepository.findDepartmentList()
-        val positions = employeeJooqRepository.findPositionList()
+        val departments = employeeProfileJooqRepository.findDepartmentList()
+        val positions = employeeProfileJooqRepository.findPositionList()
 
         log.info { "Employee Profile requested by account ID:${accountId}" }
 
@@ -70,7 +70,7 @@ class EmployeeService(
 
     fun getEmployeeCode(): EmployeeProfileResponseDto.EmployeeCode {
         val accountId = jwtUtil.getCurrentUserId()
-        val seq = employeeJooqRepository.findEmployeeCodeSeqNextVal()
+        val seq = employeeProfileJooqRepository.findEmployeeCodeSeqNextVal()
             ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
 
         log.info { "Employee Code requested by account ID:${accountId}" }
@@ -86,7 +86,7 @@ class EmployeeService(
 
         checkProfilePermission(accountId)
 
-        if (employeeJooqRepository.existEmployeeProfileByEmployeeCode(reqDto.employeeCode)) {
+        if (employeeProfileJooqRepository.existEmployeeProfileByEmployeeCode(reqDto.employeeCode)) {
             throw CustomException(ResponseCode.DUPLICATE_RESOURCE)
         }
 
@@ -103,7 +103,7 @@ class EmployeeService(
         val createdEmployeeId = account.id
             ?: throw CustomException(ResponseCode.INTERNAL_SERVER_ERROR)
 
-        employeeJooqRepository.createProfile(
+        employeeProfileJooqRepository.createProfile(
             employeeId = createdEmployeeId,
             employeeCode = reqDto.employeeCode,
             employeeName = reqDto.employeeName,
@@ -122,11 +122,11 @@ class EmployeeService(
 
         checkProfilePermission(accountId)
 
-        if (!employeeJooqRepository.existActiveEmployeeProfileByEmployeeId(employeeId)) {
+        if (!employeeProfileJooqRepository.existActiveEmployeeProfileByEmployeeId(employeeId)) {
             throw CustomException(ResponseCode.RESOURCE_NOT_FOUND)
         }
 
-        employeeJooqRepository.updateProfile(
+        employeeProfileJooqRepository.updateProfile(
             employeeId,
             employeeName = reqDto.employeeName,
             teamCode = reqDto.teamCode,
