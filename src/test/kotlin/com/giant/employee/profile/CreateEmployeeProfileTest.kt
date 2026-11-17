@@ -118,7 +118,7 @@ class CreateEmployeeProfileTest : EmployeeProfileControllerTest() {
                 email = "af21r",
                 positionCode = "3423rg",
                 teamCode = "4982748923r",
-                employeeRole = EmployeeRole.EMPLOYEE
+                employeeRole = EmployeeRole.LEFT
             )
     }
 }

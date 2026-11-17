@@ -25,7 +25,7 @@ enum class EmployeeRole {
                 throw CustomException(
                     ResponseCode.VALIDATION_ERROR,
                     "employeeRole",
-                    "입력 가능값: DEPARTMENT_CHIEF, TEAM_CHIEF, EMPLOYEE, LEFT, 입력된 값: $value"
+                    "유효하지 않은 직원 역할, 입력된 값: $value"
                 )
             }
         }

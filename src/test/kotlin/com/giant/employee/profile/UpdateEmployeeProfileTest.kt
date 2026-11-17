@@ -101,7 +101,7 @@ class UpdateEmployeeProfileTest : EmployeeProfileControllerTest() {
             employeeName = " ",
             positionCode = "3423rg",
             teamCode = "4982748923r",
-            employeeRole = EmployeeRole.DEPARTMENT_CHIEF
+            employeeRole = EmployeeRole.LEFT
         )
     }
 }
