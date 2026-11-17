@@ -1,7 +1,7 @@
 package com.giant.module.auth.dto.response
 
 import com.giant.module.auth.type.AuthRole
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.type.EmployeeRole
 import io.swagger.v3.oas.annotations.media.Schema
 
 interface AuthResponseDto {

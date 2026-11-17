@@ -1,9 +1,9 @@
-package com.giant.module.employee.dto.request
+package com.giant.module.employee.profile.dto.request
 
 import com.giant.common.api.request.PageRequest
 import com.giant.common.api.type.SortOrder
-import com.giant.module.employee.type.EmployeeProfileSortPath
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.type.EmployeeProfileSortPath
+import com.giant.module.employee.profile.type.EmployeeRole
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank

@@ -1,12 +1,12 @@
-package com.giant.module.employee.repository
+package com.giant.module.employee.profile.repository
 
 import com.giant.common.api.exception.CustomException
 import com.giant.common.api.type.ResponseCode
 import com.giant.common.api.type.SortOrder
-import com.giant.module.employee.dto.request.EmployeeProfileRequestDto
-import com.giant.module.employee.dto.response.EmployeeProfileResponseDto
-import com.giant.module.employee.type.EmployeeProfileSortPath
-import com.giant.module.employee.type.EmployeeRole
+import com.giant.module.employee.profile.dto.request.EmployeeProfileRequestDto
+import com.giant.module.employee.profile.dto.response.EmployeeProfileResponseDto
+import com.giant.module.employee.profile.type.EmployeeProfileSortPath
+import com.giant.module.employee.profile.type.EmployeeRole
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
@@ -22,7 +22,7 @@ import org.jooq.impl.DSL.multiset
 import org.springframework.stereotype.Repository
 
 @Repository
-class EmployeeJooqRepository(
+class EmployeeProfileJooqRepository(
     private val ctx: DSLContext
 ) {
     private fun <T : Any> Record.required(

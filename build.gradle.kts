@@ -41,9 +41,7 @@ dependencies {
 
     implementation("org.flywaydb:flyway-database-postgresql:13.11.1")
     implementation("com.github.vertical-blank:sql-formatter:2.0.5")
-    @Suppress("AvoidDuplicateDependencies")
     runtimeOnly("org.postgresql:postgresql:42.7.14")
-    @Suppress("AvoidDuplicateDependencies")
     jooqGenerator("org.postgresql:postgresql:42.7.14")
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
@@ -155,12 +153,12 @@ jooq {
                                     includeTypes = "auth.auth_role"
                                 },
                                 org.jooq.meta.jaxb.ForcedType().apply {
-                                    userType = "com.giant.module.employee.type.EmployeeRole"
+                                    userType = "com.giant.module.employee.profile.type.EmployeeRole"
                                     isEnumConverter = true
                                     includeTypes = "employee.employee_role"
                                 },
                                 org.jooq.meta.jaxb.ForcedType().apply {
-                                    userType = "com.giant.module.employee.type.AttendanceStatus"
+                                    userType = "com.giant.module.employee.attendance.type.AttendanceStatus"
                                     isEnumConverter = true
                                     includeTypes = "employee.attendance_status"
                                 }

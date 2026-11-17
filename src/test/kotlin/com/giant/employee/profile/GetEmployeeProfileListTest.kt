@@ -1,4 +1,4 @@
-package com.giant.employee
+package com.giant.employee.profile
 
 import com.giant.common.api.type.ResponseCode
 import org.junit.jupiter.api.DisplayName
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class GetEmployeeProfileListTest : EmployeeControllerTest() {
+class GetEmployeeProfileListTest : EmployeeProfileControllerTest() {
 
     @Test
     @DisplayName("직원 목록 조회 - 성공")
@@ -66,8 +66,8 @@ class GetEmployeeProfileListTest : EmployeeControllerTest() {
     }
 
     companion object {
-        private const val URL = "$EMPLOYEE_URL/profiles?page=1&size=5&blockSize=5&sortPath=EMPLOYEE&sortOrder=ASC"
+        private const val URL = "$PROFILE_URL?page=1&size=5&blockSize=5&sortPath=EMPLOYEE&sortOrder=ASC"
         private const val INVALID_URL =
-            "$EMPLOYEE_URL/profiles?page=1&size=5&blockSize=5&sortPath=employee&sortOrder=asc"
+            "$PROFILE_URL?page=1&size=5&blockSize=5&sortPath=employee&sortOrder=asc"
     }
 }

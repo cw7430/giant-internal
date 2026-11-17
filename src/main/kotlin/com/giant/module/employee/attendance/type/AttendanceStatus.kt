@@ -1,4 +1,4 @@
-package com.giant.module.employee.type
+package com.giant.module.employee.attendance.type
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
@@ -6,8 +6,13 @@ import com.giant.common.api.exception.CustomException
 import com.giant.common.api.type.ResponseCode
 import java.util.*
 
-enum class EmployeeRole {
-    DEPARTMENT_CHIEF, TEAM_CHIEF, EMPLOYEE, LEFT;
+enum class AttendanceStatus {
+    PRESENT,
+    LATE,
+    ABSENT,
+    ANNUAL_LEAVE,
+    HALF_DAY_AM,
+    HALF_DAY_PM;
 
     @get:JsonValue
     val value: String
@@ -15,7 +20,7 @@ enum class EmployeeRole {
 
     companion object {
         @JsonCreator
-        fun from(value: String?): EmployeeRole? {
+        fun from(value: String?): AttendanceStatus? {
             if (value.isNullOrBlank()) {
                 return null
             }
@@ -25,7 +30,7 @@ enum class EmployeeRole {
                 throw CustomException(
                     ResponseCode.VALIDATION_ERROR,
                     "employeeRole",
-                    "입력 가능값: DEPARTMENT_CHIEF, TEAM_CHIEF, EMPLOYEE, LEFT, 입력된 값: $value"
+                    "입력 가능값: PRESENT, LATE, ABSENT, ANNUAL_LEAVE, HALF_DAY_AM, HALF_DAY_PM, 입력된 값: $value"
                 )
             }
         }

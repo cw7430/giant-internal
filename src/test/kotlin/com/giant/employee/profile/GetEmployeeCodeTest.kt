@@ -1,4 +1,4 @@
-package com.giant.employee
+package com.giant.employee.profile
 
 import com.giant.common.api.type.ResponseCode
 import org.junit.jupiter.api.DisplayName
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class GetEmployeeCodeTest : EmployeeControllerTest() {
+class GetEmployeeCodeTest : EmployeeProfileControllerTest() {
 
     @Test
     @DisplayName("사번 생성 - 성공")
@@ -56,6 +56,6 @@ class GetEmployeeCodeTest : EmployeeControllerTest() {
     }
 
     companion object {
-        private const val URL = "$EMPLOYEE_URL/profiles/employee-code"
+        private const val URL = "$PROFILE_URL/employee-code"
     }
 }
