@@ -8,7 +8,6 @@ import com.giant.module.auth.repository.AuthJooqRepository
 import com.giant.module.employee.profile.dto.request.EmployeeProfileRequestDto
 import com.giant.module.employee.profile.dto.response.EmployeeProfileResponseDto
 import com.giant.module.employee.profile.repository.EmployeeProfileJooqRepository
-import com.giant.module.employee.profile.type.EmployeeRole
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
