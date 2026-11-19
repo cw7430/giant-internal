@@ -3,7 +3,9 @@ TRUNCATE TABLE
     employee.department,
     employee.team,
     employee.position,
-    employee.profile
+    employee.profile,
+    employee.attendance,
+    employee.salary
     RESTART IDENTITY CASCADE;
 
 INSERT INTO employee.department (department_code, department_name)
@@ -616,3 +618,74 @@ VALUES (1, 'EMP001', '이사장', 1, 'DEPARTMENT_CHIEF'::employee.employee_role,
         '2026-01-05 03:47:56.635+09', NULL);
 
 ALTER SEQUENCE employee.employee_code_seq RESTART WITH 144;
+
+INSERT INTO employee.attendance (employee_id, commute_date, commute_time, quit_time, attendance_status, remark,
+                                 created_by, updated_by, created_at, updated_at)
+WITH date_range AS (SELECT d::date AS target_date
+                    FROM generate_series(
+                                 '2025-01-01'::date,
+                                 (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul')::date - 1,
+                                 INTERVAL '1 day'
+                         ) AS d
+                    WHERE EXTRACT(ISODOW FROM d) BETWEEN 1 AND 5),
+     excluded_dates AS (SELECT unnest(ARRAY [
+         -- 2025년
+         '2025-01-01', -- 신정
+         '2025-01-27', -- 임시공휴일
+         '2025-01-28', -- 설날 연휴
+         '2025-01-29', -- 설날
+         '2025-01-30', -- 설날 연휴
+         '2025-03-03', -- 삼일절 대체공휴일
+         '2025-05-01', -- 근로자의 날
+         '2025-05-05', -- 어린이날 / 부처님오신날
+         '2025-05-06', -- 부처님오신날 대체공휴일
+         '2025-06-03', -- 대통령 선거일
+         '2025-06-06', -- 현충일
+         '2025-08-15', -- 광복절
+         '2025-10-03', -- 개천절
+         '2025-10-06', -- 추석
+         '2025-10-07', -- 추석 연휴
+         '2025-10-08', -- 추석 대체공휴일
+         '2025-10-09', -- 한글날
+         '2025-12-25', -- 성탄절
+
+         -- 2026년
+         '2026-01-01', -- 신정
+         '2026-02-16', -- 설날 연휴
+         '2026-02-17', -- 설날
+         '2026-02-18', -- 설날 연휴
+         '2026-03-02', -- 삼일절 대체공휴일
+         '2026-05-01', -- 노동절
+         '2026-05-05', -- 어린이날
+         '2026-05-25', -- 부처님오신날 대체공휴일
+         '2026-06-03', -- 전국동시지방선거
+         '2026-07-17', -- 제헌절
+         '2026-08-17', -- 광복절 대체공휴일
+         '2026-09-24', -- 추석 연휴
+         '2026-09-25', -- 추석
+         '2026-10-05', -- 개천절 대체공휴일
+         '2026-10-09', -- 한글날
+         '2026-12-25' -- 성탄절
+         ])::date AS ex_date),
+     valid_dates AS (SELECT dr.target_date
+                     FROM date_range dr
+                     WHERE NOT EXISTS (SELECT 1
+                                       FROM excluded_dates ed
+                                       WHERE ed.ex_date = dr.target_date)),
+     active_employees AS (SELECT id
+                          FROM employee.profile
+                          WHERE employee_role <> 'LEFT'::employee.employee_role)
+SELECT ae.id                                                                   AS employee_id,
+       vd.target_date                                                          AS commute_date,
+       (vd.target_date::timestamp + TIME '09:00:00') AT TIME ZONE 'Asia/Seoul' AS commute_time,
+       (vd.target_date::timestamp + TIME '18:00:00') AT TIME ZONE 'Asia/Seoul' AS quit_time,
+       'PRESENT'::employee.attendance_status                                   AS attendance_status,
+       NULL                                                                    AS remark,
+       1                                                                       AS created_by,
+       1                                                                       AS updated_by,
+       (vd.target_date::timestamp + TIME '09:00:00') AT TIME ZONE 'Asia/Seoul' AS created_at,
+       (vd.target_date::timestamp + TIME '09:00:00') AT TIME ZONE 'Asia/Seoul' AS updated_at
+FROM active_employees ae
+         CROSS JOIN valid_dates vd
+ORDER BY vd.target_date, ae.id
+ON CONFLICT (employee_id, commute_date) DO NOTHING;
