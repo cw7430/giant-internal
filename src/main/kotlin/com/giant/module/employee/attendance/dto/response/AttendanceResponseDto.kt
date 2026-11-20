@@ -18,14 +18,26 @@ interface AttendanceResponseDto {
         @get:JsonSerialize(using = ToStringSerializer::class)
         val employeeId: Long,
 
+        @get:Schema(description = "사원 이름", example = "이사장")
+        val employeeName: String,
+
+        @get:Schema(description = "직급 이름", example = "대표")
+        val positionName: String,
+
+        @get:Schema(description = "부서 이름", example = "경영지원부")
+        val departmentName: String,
+
+        @get:Schema(description = "팀 이름", example = "경영팀")
+        val teamName: String,
+
         @get:Schema(description = "출근일", example = "2026-03-02")
         val commuteDate: LocalDate,
 
         @get:Schema(description = "출근 시간", example = "2026-03-02T00:00:00.000Z")
-        val commuteTime: Instant,
+        val commuteTime: Instant?,
 
         @get:Schema(description = "퇴근 시간", example = "2026-03-02T09:00:00.000Z")
-        val quitTime: Instant,
+        val quitTime: Instant?,
 
         @get:Schema(description = "근태 상태", example = "PRESENT")
         val attendanceStatus: AttendanceStatus,
@@ -52,5 +64,5 @@ interface AttendanceResponseDto {
 
         @get:Schema(description = "수정 일시", example = "2026-03-02T00:00:00.000Z")
         val updatedAt: Instant,
-    ): AttendanceResponseDto
+    ) : AttendanceResponseDto
 }
